@@ -34,8 +34,9 @@ require "./app/default.php";
 <body>
     <?php
     if ($auth->utenteLoggato()) {
+        $user_logged = $auth->utenteLoggato();
         echo "<br>";
-        echo "SEI LOGGATO- <a href='logout.php'>LOGOUT</a>";
+        echo "SEI LOGGATO-". $user_logged ." <a href='logout.php'>LOGOUT</a>";
         echo "<br>";
     } else {
         echo "<div>";

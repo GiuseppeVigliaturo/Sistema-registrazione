@@ -25,5 +25,18 @@ class User
         }
         return $elenco;
     }
+
+    public function getUser($id_user){
+        $stm = "SELECT name FROM Utenti WHERE id = :id";
+        $rstm = $this->PDO->prepare($stm);
+
+        $rstm->bindParam(":id", $id_user, PDO::PARAM_STR);
+        $rstm->execute();
+
+        $loggedin = $rstm->fetch(PDO::FETCH_ASSOC);
+        $id_user = $loggedin;
+
+        return $id_user['name'];
+    }
 }
 ?>

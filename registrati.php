@@ -71,6 +71,10 @@ if ($_POST) {
         </div>
 
         <div class="form-group">
+            <input type="date"  name="birthday" required>
+        </div>
+
+        <div class="form-group">
             <input type="email" class="form-control" name="email" placeholder="Email *" required>
         </div>
 

@@ -25,6 +25,8 @@ class UsersController {
                  "<br>" .
                 "<b>USERNAME:</b>" . $user['username'] .
                 "<br>" .
+                "<b>BIRTHDAY:</b>" . $user['birthdate'] .
+                "<br>" .
                   "<b>EMAIL:</b>" . $user['email']. 
                   "<br><br>";
               echo "</div>";
@@ -51,6 +53,8 @@ class UsersController {
         $password = trim($post['password']);
         $repassword = trim($post['re_password']);
         $name = trim($post['name']);
+        $birthday = trim($post['birthday']);
+        $birthday_date = explode("-", $birthday);
         $email = trim($post['email']);
 
         //la funzione ctype_alnum permette di verificare se i 
@@ -86,6 +90,30 @@ class UsersController {
             throw new Exception("Email non valida");
             
         }
+        //data di nascita
+        $today = date("Y-m-d");
+        //per confrontare due date in php uso la funzione strtotime che mi da il timestamp 
+        //della data cioè la converte in millisecondi a partire da una certa data
+        $today_tmstmp = strtotime($today);
+        $birthday_tmstmp = strtotime($birthday);
+          $differenza = ($today_tmstmp - $birthday_tmstmp);
+        
+        $date_today = explode("-", $today);
+        //per verificare il range di età mi prendo l'anno di nascita e l'anno corrente
+        $today_year = (int)$date_today[0];
+        $birth_year = (int)$birthday_date[0];
+        
+        /*
+        *verifico che l'anno sia un intero
+        *verifico che la data di nascita non sia superiore alla data di oggi
+        *verifco che l'età sia compresa tra i 18 e i 99 anni
+         */
+        if (!(is_int($birth_year) 
+        && ($differenza > 0)
+        && ($today_year - $birth_year)> 18 
+        && ($today_year - $birth_year) < 99)) {
+            throw new Exception("INSERIRE UNA DATA DI NASCITA VALIDA");
+        }
 
          if (mb_strlen($name)== 0) {
             throw new Exception("Nome non indicato!");
@@ -98,12 +126,13 @@ class UsersController {
 
         //una volta fatti tutti i controlli aggiungiamo l'utente nella tabella del db
         try {
-            $q = "INSERT INTO Utenti (username, password, name, email) VALUES(:username, :password, :name, :email)";
+            $q = "INSERT INTO Utenti (username, password, name, birthdate ,email) VALUES(:username, :password, :name,:birthdate , :email)";
 
         $rq = $this ->PDO->prepare($q);
         $rq->bindParam(":username", $username, PDO::PARAM_STR);
         $rq->bindParam(":password", $pwd_hash, PDO::PARAM_STR);
         $rq->bindParam(":name", $name, PDO::PARAM_STR);
+        $rq->bindParam(":birthdate", $birthday);
         $rq->bindParam(":email", $email, PDO::PARAM_STR);
         $rq->execute();
         } catch (PDOException $e) {
@@ -176,9 +205,18 @@ class UsersController {
         if ($rq->rowCount()==0) {
             return FALSE;
         }
-        return TRUE;
-    }
 
+        //mostro il nome dell'utente loggato recuperando l'id dalla tabella
+        //Utenti loggati e facendo una ricerca per id nella tabella Utenti
+        $logged= $rq->fetch(PDO::FETCH_ASSOC);
+        $id_user_logged = $logged['user_id'];
+
+        if ($id_user_logged) {
+
+            $nomeutente = $this->User->getUser($id_user_logged);
+              return $nomeutente;  
+        }
+    }
 }
 
 ?>
